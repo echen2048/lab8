@@ -117,8 +117,15 @@ ovf MOV R0,#0x2A
 	MOV R0,#0x2A
 	BL ST7735_OutChar
 	
-exitoutfix	ADD SP,#8
-		POP{R0,LR}
+exitoutfix	
+	MOV R0,#0x20
+	BL ST7735_OutChar
+	MOV R0,#0x63
+	BL ST7735_OutChar
+	MOV R0,#0x6D
+	BL ST7735_OutChar
+	ADD SP,#8
+	POP{R0,LR}
 	
  BX   LR
  
@@ -127,3 +134,4 @@ exitoutfix	ADD SP,#8
 
      ALIGN                           ; make sure the end of this section is aligned
      END                             ; end of file
+		 

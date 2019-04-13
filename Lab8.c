@@ -64,7 +64,6 @@ int main(void){       // single step this program and look at Data
     Data = ADC_In();  // sample 12-bit channel 5
   }
 }
-
 int main2(void){
   TExaS_Init();       // Bus clock is 80 MHz 
   ADC_Init();         // turn on ADC, set channel to 5
@@ -124,10 +123,9 @@ int main(void){
 	while(1){
 		while(ADCstatus<0){};
 		LCD_OutFix(Convert(ADCmail));
-		ST7735_OutChar('\n');
+		ST7735_SetCursor(0,0);
 		ADCstatus = -1;
   }
 }
-
 
 
