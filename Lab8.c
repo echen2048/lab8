@@ -83,7 +83,8 @@ int main2(void){
 */
 // your function to convert ADC sample to distance (0.001cm)
 uint32_t Convert(uint32_t input){
-  return input;
+	return input*0.4463+88.961;
+	
 }
 void SysTick_Handler(void){
 	GPIO_PORTF_DATA_R ^=0x02;

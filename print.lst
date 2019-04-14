@@ -180,25 +180,31 @@ ARM Macro Assembler    Page 3
   117 000000B8 F04F 002A       MOV              R0,#0x2A
   118 000000BC F7FF FFFE       BL               ST7735_OutChar
   119 000000C0         
-  120 000000C0 B002    exitoutfix
-                               ADD              SP,#8
-  121 000000C2 E8BD 4001       POP{R0,LR}
-  122 000000C6         
-  123 000000C6 4770            BX               LR
-  124 000000C8         
-  125 000000C8                 ALIGN
-  126 000000C8         ;* * * * * * * * End of LCD_OutFix * * * * * * * *
-  127 000000C8         
-  128 000000C8                 ALIGN                        ; make sure the end
-                                                             of this section is
-                                                             aligned
-  129 000000C8                 END                          ; end of file
+  120 000000C0         exitoutfix
+  121 000000C0 F04F 0020       MOV              R0,#0x20
+  122 000000C4 F7FF FFFE       BL               ST7735_OutChar
+  123 000000C8 F04F 0063       MOV              R0,#0x63
+  124 000000CC F7FF FFFE       BL               ST7735_OutChar
+  125 000000D0 F04F 006D       MOV              R0,#0x6D
+  126 000000D4 F7FF FFFE       BL               ST7735_OutChar
+  127 000000D8 B002            ADD              SP,#8
+  128 000000DA E8BD 4001       POP{R0,LR}
+  129 000000DE         
+  130 000000DE 4770            BX               LR
+  131 000000E0         
+  132 000000E0                 ALIGN
 
 
 
 ARM Macro Assembler    Page 4 
 
 
+  133 000000E0         ;* * * * * * * * End of LCD_OutFix * * * * * * * *
+  134 000000E0         
+  135 000000E0                 ALIGN                        ; make sure the end
+                                                             of this section is
+                                                             aligned
+  136 000000E0                 END                          ; end of file
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4 --apcs=interw
 ork --depend=.\print.d -o.\print.o -I.\RTE\_Lab8 -IC:\Keil_v5\ARM\PACK\ARM\CMSI
 S\5.4.0\CMSIS\Core\Include -IC:\Keil_v5\ARM\PACK\Keil\TM4C_DFP\1.1.0\Device\Inc
@@ -313,6 +319,9 @@ Symbol: ST7735_OutChar
       At line 114 in file Print.s
       At line 116 in file Print.s
       At line 118 in file Print.s
+      At line 122 in file Print.s
+      At line 124 in file Print.s
+      At line 126 in file Print.s
 
 ST7735_OutString 00000000
 
