@@ -419,5 +419,5 @@ void Output_On(void);
 // Input:  16-bit packed color
 // Output: none
 void Output_Color(uint32_t newColor); 
-
+void Delay1ms(uint32_t n);
 #endif

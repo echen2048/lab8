@@ -33,6 +33,12 @@ void EnableInterrupts(void);  // Enable interrupts
 #define PF1       (*((volatile uint32_t *)0x40025008))
 #define PF2       (*((volatile uint32_t *)0x40025010))
 #define PF3       (*((volatile uint32_t *)0x40025020))
+float weight;
+float bias;
+int32_t adcval[7];
+int32_t dist[7];
+int32_t ymean =1000;
+int32_t yvar = 400000;
 // Initialize Port F so PF1, PF2 and PF3 are heartbeats
 void PortF_Init(void){
 	volatile uint32_t delay;
@@ -40,7 +46,12 @@ void PortF_Init(void){
 	delay = 100;
 	delay++;
 	GPIO_PORTF_DIR_R |= 0x0E;
+
+	GPIO_PORTF_PUR_R |= 0x10;
+	GPIO_PORTF_DIR_R &= ~0x10;
+	GPIO_PORTF_DEN_R |= 0x10; 
 	GPIO_PORTF_DEN_R |= 0x0E;
+
 }
 
 void SysTick_Init(void){
@@ -83,7 +94,7 @@ int main2(void){
 */
 // your function to convert ADC sample to distance (0.001cm)
 uint32_t Convert(uint32_t input){
-	return input*0.4463+88.961;
+	return input*weight+bias;
 	
 }
 void SysTick_Handler(void){
@@ -91,6 +102,119 @@ void SysTick_Handler(void){
 	GPIO_PORTF_DATA_R ^=0x02;
 	ADCstatus = 1;
 	ADCmail = ADC_In();
+}
+
+void IO_Touch(void) {
+	uint8_t state;
+	while(1){
+		state = GPIO_PORTF_DATA_R;
+		state &= 0x10;
+		if(GPIO_PORTF_DATA_R == 0){
+			Delay1ms(20);
+			state = GPIO_PORTF_DATA_R;
+			state &= 0x10;
+			if(GPIO_PORTF_DATA_R==0x10){
+				return;
+			}
+		}
+	}
+ // --UUU-- wait for release; delay for 20ms; and then wait for press
+}  
+float mean(void){
+	int32_t sum=0;
+	for(int i=0;i<7;i++){
+		sum+=adcval[i];
+	}
+	return sum/7;
+}
+float variance(int32_t mean){
+	int32_t var=0;
+	for(int i=0;i<7;i++){
+		var+=(adcval[i]-mean)*(adcval[i]-mean);
+	}
+	return var;
+}
+float covar(int32_t mean){
+	int32_t covar=0;
+	for(int i=0;i<7;i++){
+		covar+=(adcval[i]-mean)*(dist[i]-ymean);
+	}
+	return covar;
+}
+
+void AutoCal(void){
+	dist[0]=0;
+	dist[1]=400;
+	dist[2]=800;
+	dist[3]=1000;
+	dist[4]=1200;
+	dist[5]=1600;
+	dist[6]=2000;
+	
+	adcval[0]=5;
+	adcval[1]=475;
+	adcval[2]=1552;
+	adcval[3]=1955;
+	adcval[4]=2585;
+	adcval[5]=3621;
+	adcval[6]=4095;
+	
+	
+	ST7735_OutString("Start AutoCal.\nSet slider to 0\nthen press SW1");
+	IO_Touch();
+	adcval[0]=ADC_In();
+	
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 4mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[1]=ADC_In();
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 8mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[2]=ADC_In();
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 10mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[3]=ADC_In();
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 12mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[4]=ADC_In();
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 16mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[5]=ADC_In();
+	
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0);
+	ST7735_OutString("Set slider to 20mm.\nPress SW1 to confirm");
+	IO_Touch();
+	adcval[6]=ADC_In();
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0); 
+	
+	float mn = mean();
+	float var = variance(mn);
+	float cv = covar(mn);
+	float internal_w = cv/var;
+	weight = cv/var;
+	bias = ymean-weight*mn;
+	ST7735_OutString("Calibration complete\nSW1 to continue");
+	
+	IO_Touch();
+	ST7735_SetCursor(0,0);
+	ST7735_FillScreen(0); 
+	return;
 }
 /*
 int main3(void){ 
@@ -120,6 +244,7 @@ int main(void){
 	SysTick_Init();
 	ADC_Init();
 	ST7735_InitR(INITR_REDTAB); 
+	AutoCal();
   ADCstatus = -1;
 	while(1){
 		while(ADCstatus<0){};
